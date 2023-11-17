@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Word Guessing Game</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        text-align: center;
+        margin: 20px;
+        background: linear-gradient(to bottom, #8e9eab, #eef2f3);
+      }
+
+      h1 {
+        color: #4caf50;
+      }
+
+      button {
+        font-size: 18px;
+        padding: 12px 24px;
+        margin: 10px;
+        cursor: pointer;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      #search-box {
+        font-size: 18px;
+        padding: 15px;
+        margin-top: 20px;
+        width: 60%;
+        box-sizing: border-box;
+      }
+
+      #letter-buttons-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      #result-message {
+        font-size: 18px;
+        margin-top: 20px;
+        color: #4caf50;
+      }
+
+      #result-message.incorrect {
+        color: red;
+      }
+
+      #definition {
+        font-size: 24px;
+        margin-top: 20px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .button-container {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+      }
+
+      .button-container button {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Word Guessing Game</h1>
+
+    <div id="result-message"></div>
+    <input type="text" id="search-box" placeholder="Type a word..." />
+    <button style="display: inline-block" onclick="checkWord()">Check</button>
+    <div id="letter-buttons-container"></div>
+    <div id="definition"></div>
+
+    <div class="button-container">
+      <button onclick="clearSearchBox()">Clear</button>
+
+      <button onclick="nextSet()">Next</button>
+    </div>
+
+    <script>
+      const dictionary = {
+        book: "A set of written or printed pages, usually bound with a protective cover.",
+        chair: "A separate seat for one person, typically with a back and four legs.",
+        table: "A piece of furniture with a flat top and one or more legs, providing a level surface for eating, writing, or working.",
+        car: "A road vehicle, typically with four wheels, powered by an internal combustion engine and able to carry a small number of people.",
+        pen: "An instrument for writing or drawing with ink, typically consisting of a metal nib or ball, or a nylon tip, fitted into a metal or plastic holder.",
+        computer: "An electronic device for storing and processing data, typically in binary form, according to instructions given to it in a variable program.",
+        phone: "a device by which sound (such as speech) is converted into electrical impulses and transmitted (as by wire or radio waves) to one or more specific receivers.",
+        house: "A building for human habitation, especially one that is lived in by a family or small group of people.",
+        shoes: "A covering for the foot, typically made of leather, with a sturdy sole and not reaching above the ankle.",
+        key: "A small piece of shaped metal with incisions cut to fit the wards of a particular lock, and that is inserted into a lock and turned to open or close it.",
+        door: "A hinged, sliding, or revolving barrier at the entrance to a building, room, or vehicle, or in the framework of a cupboard.",
+        cup: "A small bowl-shaped container for drinking from, typically having a handle.",
+        clock: "A mechanical or electrical device for measuring time, indicating hours, minutes, and sometimes seconds by hands on a round dial or by displayed figures.",
+        bag: "A flexible container with an opening at the top, used for carrying things.",
+        paper: "Material manufactured in thin sheets from the pulp of wood or other fibrous substances, used for writing, drawing, or printing on.",
+        bed: "A piece of furniture for sleep or rest, typically a framework with a mattress and coverings.",
+        window:"An opening in the wall or roof of a building or vehicle, typically with glass in it, to admit light or air and allow people to see out.",
+        tree: "A woody perennial plant, typically having a single stem or trunk growing to a considerable height and bearing lateral branches at some distance from the ground.",
+        watch: "A small timepiece worn typically on a strap on one's wrist.",
+        hat: "A shaped covering for the head worn for warmth, as a fashion item, or as part of a uniform.",
+        dog: "A domesticated carnivorous mammal that typically has a long snout, an acute sense of smell, and a barking, howling, or whining voice.",
+        cat: "A small domesticated carnivorous mammal with soft fur, a short snout, and retractable claws.",
+        bird: "A warm-blooded egg-laying vertebrate distinguished by the possession of feathers, wings, and a beak.",
+        fish: "A limbless cold-blooded vertebrate animal with gills and fins living wholly in water.",
+        elephant: "A heavy plant-eating mammal with a prehensile trunk, long curved ivory tusks, and large ears.",
+        lion: "A large tawny-colored cat that lives in prides, found in Africa and Northwestern India.",
+        tiger: "A large solitary cat with a yellow-brown coat striped with black, native to the forests of Asia.",
+        bear: "A large, heavy mammal with thick fur and a short tail that is native to North America and Eurasia.",
+        horse: "A large domesticated mammal with solid hooves, a flowing mane and tail, used for riding, racing, and as a beast of burden.",
+        rabbit: "A burrowing, gregarious, plant-eating mammal with long ears, long hind legs, and a short tail.",
+        monkey: "A small to medium-sized primate that typically has a long tail, most kinds of which live in trees in tropical countries.",
+        snake: "A long legless reptile that has no eyelids and a short tail.",
+        turtle: "A slow-moving reptile with a shell into which it can retract its head and thick skin.",
+        dolphin: "A small gregarious toothed whale that typically has a beaklike snout and a curved fin on the back.",
+        penguin: "A flightless bird that lives in the Southern Hemisphere, especially in Antarctica.",
+        giraffe: "A large African mammal with a very long neck and forelegs, having a coat patterned with brown patches separated by lighter lines.",
+        kangaroo: "A large herbivorous marsupial with a long powerful tail and strongly developed hind limbs that enable it to travel by leaping.",
+        zebra: "A wild animal native to Africa, closely related to the horse, with black and white stripes on its body.",
+        wolf: "A wild carnivorous mammal of the dog family.",
+        cheetah: "A large slender spotted cat found in Africa and parts of Asia.",
+        cow: "A fully grown female animal of a domesticated breed of ox, kept to produce milk or beef.",
+        sheep: "A domesticated ruminant mammal with a thick woolly coat and typically curly horns.",
+        chicken: "A domestic fowl kept for its eggs or meat, especially a young one.",
+        duck: "A waterbird with a broad flat bill, webbed feet, and a squat body.",
+        frog: "A tailless amphibian with a short squat body, moist smooth skin, and very long hind legs for leaping.",
+        butterfly: "A nectar-feeding insect with two pairs of large, typically brightly colored wings that are covered with microscopic scales.",
+        bee: "A stinging winged insect that collects nectar and pollen, produces wax and honey, and lives in large communities.",
+        spider: "An eight-legged predatory arachnid with an unsegmented body consisting of a fused head and thorax and a rounded abdomen.",
+        snail: "A shelled gastropod mollusk, typically with a spiral shell.",
+        octopus: "A sea creature with a soft, oval body and eight sucker-bearing.",
+        person: ['A human being regarded as an individual.'],
+        time: ['The measured or measurable period during which an action, process, or condition exists or continues.'],
+        year: ['A unit of time that is equal to 12 months or 365 or sometimes 366 days.'],
+        way: ['A method, style, or manner of doing something; an optional or alternative form of action'],
+        day: ['A division of time equal to 24 hours and representing the average length of the period during which the earth makes one rotation on its axis'],
+        thing: ['An inanimate material object as distinct from a living sentient being.'],
+        man: ['An adult male human being.'],
+        world: ['The earth, together with all of its countries and peoples'],
+        life: ['The existence of an individual human being or animal.'],
+        hand: ['The end part of a persons arm beyond the wrist, including the palm, fingers, and thumb.'],
+        part: ['An amount or section which, when combined with others, makes up the whole of something.'],
+        child: ['A young human being below the age of puberty or below the legal age of majority.'],
+        eye: ['each of a pair of globular organs of sight in the head of humans and vertebrate animals.'],
+        woman: ['An adult female human being.'],
+        place: ['A particular position, point, or area in space; a location.'],
+        work: ['Activity involving mental or physical effort done in order to achieve a purpose or result.'],
+        week: ['A period of seven days.'],
+        case: ['An instance of a particular situation; an example of something occurring.'],
+        point: ['Give force or emphasis to (words or actions).'],
+        government: ['The group of people with the authority to govern a country or state; a particular ministry in office.'],
+        childhood: ['The state or period of being a child.'],
+        dream: ['A cherished aspiration, ambition, or ideal.'],
+        goal: ['The object of a persons ambition or effort; an aim or desired result.'],
+        power: ['The capacity or ability to direct or influence the behaviour of others or the course of events.'],
+        money: ['Any object that is generally accepted as payment for goods and services and repayment of debts in a given country or socio-economic context'],
+        success: ['The accomplishment of an aim or purpose.'],
+        failure: ['A lack of success in doing or achieving something, especially in relation to a particular activity.'],
+        happiness: ['The state of being happy.'],
+        friendship: ['The emotions or conduct of friends; the state of being friends.'],
+        education: ['The process of receiving or giving systematic instruction, especially at a school or university.'],
+        health: ['The state of being free from illness or injury.'],
+        home: ['The place where one lives permanently, especially as a member of a family or household.'],
+        nature: ['The phenomena of the physical world collectively, including plants, animals, the landscape, and other features and products of the earth, as opposed to humans or human creations.'],
+        business: ['A persons regular occupation, profession, or trade.'],
+        weekend: ['Saturday and Sunday, especially regarded as a time for leisure.'],
+        experience: ['Practical contact with and observation of facts or events.'],
+        adventure: ['An unusual and exciting or daring experience.'],
+        bubble: ['A thin sphere of liquid enclosing air or another gas.'],
+        guitar: ['A stringed musical instrument, with a fretted fingerboard, typically incurved sides, and six or twelve strings, played by plucking or strumming with the fingers or a plectrum.'],
+        window: ['An opening in the wall or roof of a building or vehicle, fitted with glass in a frame to admit light or air and allow people to see out.'],
+        dragon: ['A mythical monster resembling a giant reptile, sometimes shown as having wings. In European tradition the dragon is typically fire-breathing and tends to symbolize chaos or evil, whereas in East Asia it is usually a beneficent symbol of fertility, associated with water and the heavens.'],
+        rocket: ['A cylindrical projectile that can be propelled to a great height or distance by the combustion of its contents, used typically as a firework or signal.'],
+        circle: ['A round plane figure whose boundary (the circumference) consists of points equidistant from a fixed point (the centre).'],
+        basket: ['A container used to hold or carry things, typically made from interwoven strips of cane or wire.'],
+        coffee: ['A hot drink made from the roasted and ground seeds (coffee beans) of a tropical shrub.'],
+        flower: ['The seed-bearing part of a plant, consisting of reproductive organs (stamens and carpels) that are typically surrounded by a brightly coloured corolla (petals) and a green calyx (sepals).'],
+        lemon: ['A pale yellow oval citrus fruit with thick skin and fragrant, acidic juice.'],
+        radio: ['The transmission and reception of electromagnetic waves of radio frequency, especially those carrying sound messages.'],
+        table: ['A piece of furniture with a flat top and one or more legs, providing a level surface for eating, writing, or working at.'],
+        ocean: ['A very large expanse of sea, in particular each of the main areas into which the sea is divided geographically.'],
+        rabbit: ['A gregarious burrowing plant-eating mammal, with long ears, long hind legs, and a short tail.'],
+        wallet: ['A pocket-sized flat folding case for holding money and plastic cards.'],
+        bridge: ['A structure carrying a road, path, railway, etc. across a river, road, or other obstacle'],
+        love: ['An intense feeling of deep affection'],
+        friend: ['A person with whom one has a bond of mutual affection, typically one exclusive of sexual or family relations'],
+        family: ['A family is a group of two or more persons related by birth, marriage, or adoption who live together; all such related persons are considered as members of one family'],
+        house: ['A building for human habitation, especially one that consists of a ground floor and one or more upper storeys'],
+        car: ['A four-wheeled road vehicle that is powered by an engine and is able to carry a small number of people'],
+        money: ['Current medium of exchange in the form of coins and banknotes; coins and banknotes collectively'],
+        school: ['A place or institution for teaching and learning; establishment for education, an institution for teaching children'],
+        book: ['A written or printed work consisting of pages glued or sewn together along one side and bound in covers.'],
+        city: ['An inhabited place of greater size, population, or importance than a town or village'],
+        food: ['Any nutritious substance that people or animals eat or drink or that plants absorb in order to maintain life and growth'],
+        water: ['A colourless, transparent, odourless liquid that forms the seas, lakes, rivers, and rain and is the basis of the fluids of living organisms'],
+        air: ['The invisible gaseous substance surrounding the earth, a mixture mainly of oxygen and nitrogen'],
+        health: ['The state of being free from illness or injury'],
+        mind: ['The element of a person that enables them to be aware of the world and their experiences, to think, and to feel; the faculty of consciousness and thought'],
+        heart: [' Hollow muscular organ that pumps the blood through the circulatory system by rhythmic contraction and dilation'],
+        music: ['Vocal or instrumental sounds (or both) combined in such a way as to produce beauty of form, harmony, and expression of emotion'],
+        art: ['The various branches of creative activity, such as painting, music, literature, and dance'],
+        computer: ['An electronic device for storing and processing data, typically in binary form, according to instructions given to it in a variable program'],
+        internet: ['A global computer network providing a variety of information and communication facilities, consisting of interconnected networks using standardized communication protocols'],
+        friendship: ['The emotions or conduct of friends; the state of being friends'],
+        environment: ['The surroundings or conditions in which a person, animal, or plant lives or operates'],
+        technology: ['The application of scientific knowledge for practical purposes, especially in industry'],
+        communication: ['The imparting or exchanging of information by speaking, writing, or using some other medium'],
+        culture: ['The ideas, customs, and social behaviour of a particular people or society'],
+        problem: ['A matter or situation regarded as unwelcome or harmful and needing to be dealt with and overcome'],
+        solution: ['A means of solving a problem or dealing with a difficult situation'],
+        development: ['An event constituting a new stage in a changing situation'],
+        economy: ['The state of a country or region in terms of the production and consumption of goods and services and the supply of money'],
+        industry: ['Economic activity concerned with the processing of raw materials and manufacture of goods in factories'],
+        opportunity: ['A time or set of circumstances that makes it possible to do something'],
+        knowledge: ['Facts, information, and skills acquired through experience or education; the theoretical or practical understanding of a subject'],
+        relationship: ['The way in which two or more people or things are connected, or the state of being connected.'],
+        difference: ['A point or way in which people or things are dissimilar.'],
+        decision: ['A conclusion or resolution reached after consideration,.'],
+        future: ['A period of time following the moment of speaking or writing.'],
+        spider: ['An eight-legged predatory arachnid with an unsegmented body consisting of a fused head and thorax and a rounded abdomen.'],
+        penguin: ['A large flightless seabird of the southern hemisphere, with black upper parts and white underparts and wings developed into flippers for swimming under water'],
+        ant:['A small insect typically having a sting and living in a complex social colony with one or more breeding queens.'],
+        mud:['A slimy sticky mixture of solid material with a liquid and especially water.'],
+        earth:['The planet on which we live'],
+        hair:['Any of the fine threadlike strands growing from the skin of humans, mammals, and some other animals.'],
+        pet:['A domestic or tamed animal kept for companionship or pleasure.'],
+        pig:['An omnivorous domesticated hoofed mammal with sparse bristly hair and a flat snout for rooting in the soil.'],
+        bird:['A warm-blooded egg-laying vertebrate animal distinguished by the possession of feathers, wings, a beak, and typically by being able to fly.'],
+        barn:['A large farm building used for storing grain, hay, or straw or for housing livestock.'],
+        moon:['The natural satellite of the earth, visible (chiefly at night) by reflected light from the sun.']
+      };
+
+      const letterSets = [
+        ["C", "V", "A", "I", "R", "H", "P", "E", "T"],
+        ["S", "B", "I", "D", "I", "R", "N", "A", "E", "P"],
+        ["P", "E", "B", "G", "R", "I", "N", "N", "U", "D"],
+        ["W", "M", "A", "N", "T", "D", "T", "E", "R"],
+        ["M", "U", "D", "C", "S", "N", "I"],
+        ["E", "S", "R", "H", "Z", "A", "T", "B", "O"],
+        ["F", "H", "C", "I", "D", "O", "E", "H", "L", "O", "D"],
+        ["M", "L", "V", "O", "N", "E", "O", "C", "A"]
+    ];
+      let currentSetIndex = 0;
+
+      function getRandomSet() {
+        return letterSets[currentSetIndex];
+      }
+
+      function addLetterButtons() {
+        const letterButtonsContainer = document.getElementById(
+          "letter-buttons-container"
+        );
+        letterButtonsContainer.innerHTML = "";
+
+        const randomLetters = getRandomSet();
+
+        randomLetters.forEach((letter) => {
+          const button = document.createElement("button");
+          button.textContent = letter;
+          button.addEventListener("click", () => addToWord(letter));
+          letterButtonsContainer.appendChild(button);
+        });
+      }
+
+      function addToWord(letter) {
+        const searchBox = document.getElementById("search-box");
+        searchBox.value += letter;
+      }
+
+      function clearSearchBox() {
+        document.getElementById("search-box").value = "";
+      }
+
+      function displayResultMessage(isCorrect) {
+        const resultMessage = document.getElementById("result-message");
+        resultMessage.textContent = isCorrect ? "Correct!" : "Incorrect!";
+        resultMessage.className = isCorrect ? "" : "incorrect";
+      }
+
+      function displayDefinition(word) {
+        const definitionDiv = document.getElementById("definition");
+        definitionDiv.textContent = dictionary[word];
+      }
+
+      function checkWord() {
+        const enteredWord = document
+          .getElementById("search-box")
+          .value.toLowerCase();
+        const definitionDiv = document.getElementById("definition");
+
+        if (enteredWord in dictionary) {
+          displayResultMessage(true);
+        } else {
+          displayResultMessage(false);
+        }
+
+        displayDefinition(enteredWord);
+      }
+
+      function nextSet() {
+        currentSetIndex = (currentSetIndex + 1) % letterSets.length;
+        document.getElementById("search-box").value = "";
+        document.getElementById("result-message").textContent = "";
+        document.getElementById("result-message").className = "";
+        document.getElementById("definition").textContent = "";
+        addLetterButtons();
+      }
+
+      // Initial setup
+      addLetterButtons();
+      function clearSearchBox() {
+        document.getElementById("search-box").value = "";
+        document.getElementById("definition").innerText = "";
+        document.getElementById("result-message").innerText = "";
+        document.getElementById("result-message").classList.remove("incorrect");
+      }
+    </script>
+  </body>
+</html>
